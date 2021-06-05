@@ -5,10 +5,11 @@ DB=$(mktemp)
 
 # Insert the 3 sheets from the Excel file with some form of primary key
 sqlite-utils insert --csv $DB FurtherExplanation FurtherExplanation.csv --pk 'Legal Basis for Provision of Data (Dissemination)'
-for Y in 2021; do
-    for M in 04 03 02 01; do
-        sqlite-utils insert --csv $DB PurposeStatements $Y-$M/PurposeStatements.csv --pk 'Reference Number' --ignore
-        sqlite-utils insert --csv $DB DataReleases $Y-$M/DataReleases.csv --pk ID --ignore
+for Y in 2019 2020 2021; do
+    for M in 01 02 03 04 05 06 07 08 09 10 11 12; do
+        if [ -d "$Y-$M" ]; then sqlite-utils insert --csv $DB PurposeStatements $Y-$M/PurposeStatements.csv --pk 'Reference Number' --replace; fi
+        if [ -d "$Y-$M" ]; then sqlite-utils insert --csv $DB DataReleases $Y-$M/DataReleases.csv --pk ID --replace; fi
+        if [ -f "$Y-$M/Amendments.csv" ]; then sqlite-utils insert --csv $DB DataReleases $Y-$M/Amendments.csv --pk ID --replace; fi
     done
 done
 
@@ -25,4 +26,4 @@ sqlite-utils add-foreign-key $DB DataReleases 'NIC Number' PurposeStatements 'Re
 sqlite-utils add-foreign-key $DB DataReleases 'Legal Basis for Provision of Data (Dissemination)' FurtherExplanation 'Legal Basis for Provision of Data (Dissemination)'
 
 # Done
-mv $DB nhs-data-release-register-2021.db
+mv $DB nhs-data-release-register.db

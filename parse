@@ -1,0 +1,49 @@
+import csv
+import os
+from pathlib import Path
+import requests_cache
+import pyexcel
+
+session = requests_cache.CachedSession()
+
+for row in csv.DictReader(open('registers')):
+    print(row)
+    ss = session.get(row['URL']).content
+    boo = pyexcel.get_book(file_content=ss, file_type='xlsx')
+
+    dir = Path(f'{row["Year"]}-{row["Month"]}')
+    os.makedirs(dir, exist_ok=True)
+
+    try:
+        releases = boo['DataReleases']
+    except KeyError:
+        releases = boo['DataReleases ']
+    releases[0,0] = 'ID' # Cannot be RowID
+    releases[0,3] = 'Data provided to customer'
+    releases.map(lambda x: x.replace('–', '-'))
+    releases.save_as(str(dir / "DataReleases.csv"))
+
+    try:
+        purpose = boo['PurposeStatements']
+    except KeyError:
+        purpose = boo['PurposeStatements ']
+    purpose.save_as(str(dir / 'PurposeStatements.csv'))
+
+#    try:
+#        further = boo['FurtherExplanationOfTerms']
+#    except KeyError:
+#        further = None  # Missing from two
+#    if further:
+#        further.save_as(str(dir / 'FurtherExplanation.csv'))
+
+    try:
+        amendments = boo['AmendmentsToPreviousRegisters']
+    except KeyError:
+        amendments = boo['AmendmentsToLastRegister']
+    if amendments.number_of_rows() > 1 and amendments[0,0] == 'RowID':
+        if amendments.number_of_columns() <= 12 or 'no amendments' not in amendments[1,12].lower():
+            amendments[0,0] = 'ID' # Cannot be RowID
+            amendments[0,3] = 'Data provided to customer'
+            if amendments.number_of_columns() > 12:
+                amendments.delete_columns([12])
+            amendments.save_as(str(dir / 'Amendments.csv'))
