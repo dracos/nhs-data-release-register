@@ -11,7 +11,7 @@ for row in csv.DictReader(open('registers')):
     ss = session.get(row['URL']).content
     boo = pyexcel.get_book(file_content=ss, file_type='xlsx')
 
-    dir = Path(f'{row["Year"]}-{row["Month"]}')
+    dir = Path(f'data/{row["Year"]}-{row["Month"]}')
     os.makedirs(dir, exist_ok=True)
 
     try:

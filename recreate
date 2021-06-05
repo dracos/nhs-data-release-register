@@ -7,9 +7,9 @@ DB=$(mktemp)
 sqlite-utils insert --csv $DB FurtherExplanation FurtherExplanation.csv --pk 'Legal Basis for Provision of Data (Dissemination)'
 for Y in 2019 2020 2021; do
     for M in 01 02 03 04 05 06 07 08 09 10 11 12; do
-        if [ -d "$Y-$M" ]; then sqlite-utils insert --csv $DB PurposeStatements $Y-$M/PurposeStatements.csv --pk 'Reference Number' --replace; fi
-        if [ -d "$Y-$M" ]; then sqlite-utils insert --csv $DB DataReleases $Y-$M/DataReleases.csv --pk ID --replace; fi
-        if [ -f "$Y-$M/Amendments.csv" ]; then sqlite-utils insert --csv $DB DataReleases $Y-$M/Amendments.csv --pk ID --replace; fi
+        if [ -d "data/$Y-$M" ]; then sqlite-utils insert --csv $DB PurposeStatements data/$Y-$M/PurposeStatements.csv --pk 'Reference Number' --replace; fi
+        if [ -d "data/$Y-$M" ]; then sqlite-utils insert --csv $DB DataReleases data/$Y-$M/DataReleases.csv --pk ID --replace; fi
+        if [ -f "data/$Y-$M/Amendments.csv" ]; then sqlite-utils insert --csv $DB DataReleases data/$Y-$M/Amendments.csv --pk ID --replace; fi
     done
 done
 
