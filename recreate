@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euxo pipefail
+
+DB=$(mktemp)
+
+# Insert the 3 sheets from the Excel file with some form of primary key
+sqlite-utils insert --csv $DB FurtherExplanation FurtherExplanation.csv --pk 'Legal Basis for Provision of Data (Dissemination)'
+for Y in 2021; do
+    for M in 04 03 02 01; do
+        sqlite-utils insert --csv $DB PurposeStatements $Y-$M/PurposeStatements.csv --pk 'Reference Number' --ignore
+        sqlite-utils insert --csv $DB DataReleases $Y-$M/DataReleases.csv --pk ID --ignore
+    done
+done
+
+# Extract the organisations to their own table
+sqlite-utils extract $DB DataReleases 'Organisation Name' --table Organisations --rename 'Organisation Name' 'name'
+sqlite-utils extract $DB PurposeStatements 'Organisation' --table Organisations --rename 'Organisation' 'name'
+
+# Turn on some full text search
+sqlite-utils enable-fts $DB PurposeStatements 'Objective for Processing' 'Processing Activities' 'Expected Output' 'Expected Measurable Benefits' 'Yielded Benefits'
+sqlite-utils enable-fts $DB Organisations 'name'
+
+# Add some foreign keys
+sqlite-utils add-foreign-key $DB DataReleases 'NIC Number' PurposeStatements 'Reference Number'
+sqlite-utils add-foreign-key $DB DataReleases 'Legal Basis for Provision of Data (Dissemination)' FurtherExplanation 'Legal Basis for Provision of Data (Dissemination)'
+
+# Done
+mv $DB nhs-data-release-register-2021.db

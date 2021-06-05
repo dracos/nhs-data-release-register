@@ -1,0 +1,14 @@
+{
+    "title": "NHS DARS Register of approved data releases 2021",
+    "source": "NHS Digital",
+    "source_url": "https://digital.nhs.uk/services/data-access-request-service-dars/register-of-approved-data-releases",
+    "databases": {
+        "nhs-data-release-register-2021": {
+            "tables": {
+                "PurposeStatements": {
+                    "facets": ["Organisation Type"]
+                }
+            }
+        }
+    }
+}
